@@ -4,7 +4,7 @@ You'd be surprised who likes to play games.
 
 _Background_
 
-This console is the most direct and simplistic way to not just have an agent (aeon) play live games but to also understand and chart _intelligence_.
+This console is the most direct and simplistic way to not just have an agent (aeon) play live games but to also understand and chart _intelligence_. We also include the idea that we can create our own programs and/or burn any of the available games stored in the `ROMs` folder [here](/ROMs/README.md).
 
 ![2600](/images/Atari-2600.png)
 
