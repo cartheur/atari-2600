@@ -4,11 +4,11 @@ You'd be surprised who likes to play games.
 
 _Background_
 
-Back in the day, one Christmas, my father brought a seemingly innocuous device home that would change the course of world history.
+This console is the most direct and simplistic way to not just have an agent (aeon) play live games but to also understand and chart _intelligence_.
 
 ![2600](/images/Atari-2600.png)
 
-This repo is dedicated to him and the gaming agent that resides deeply and permanently within us.
+The work herein will work to explore this aspect.
 
 ### Agent 57
 
