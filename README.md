@@ -9,3 +9,7 @@ Back in the day, one Christmas, my father brought a seemingly innocuous device h
 ![2600](/images/Atari-2600.png)
 
 This repo is dedicated to him and the gaming agent that resides deeply and permanently within us.
+
+### Agent 57
+
+A [benchmark](https://deepmind.google/blog/agent57-outperforming-the-human-atari-benchmark/)
