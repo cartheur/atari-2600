@@ -17,3 +17,6 @@ A [benchmark](https://deepmind.google/blog/agent57-outperforming-the-human-atari
 See the [proposal for an efficient Atari-playing agent](AGENT_PLAY_PROPOSAL.md),
 including an emulator-first training plan and a safe path to play through a
 real Atari 2600's video and joystick port.
+
+The purchase list, wiring boundary, and commissioning sequence for the first
+*Adventure* hardware experiment are in the [dedicated hardware BoM](HARDWARE_BOM.md).

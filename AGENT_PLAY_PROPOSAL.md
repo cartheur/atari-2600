@@ -29,6 +29,17 @@ episode's variation, console region, start/reset procedure, elapsed frames,
 completion state and a human-verified result.  Do not give the policy RAM,
 room IDs, object coordinates or an emulator score during evaluation.
 
+### Live observability and replay
+
+The camera view is both the agent's visual observation and the human's window
+onto its play.  Show a live preview on the host (or a separate monitor) and
+record a synchronized run log: camera frames/video, agent joystick command,
+relay action actually applied, monotonic timestamps, configuration version and
+episode outcome.  A playback tool must be able to overlay the selected action
+and its timing on the recorded gameplay.  This makes each decision visible and
+lets us diagnose failures without exposing hidden console or emulator state to
+the agent.
+
 Initial milestones, in order:
 
 1. Learn reliable movement, wall collision avoidance and fire-button timing
@@ -109,16 +120,25 @@ input size/colour format.  Calibrate the capture pipeline by showing a
 recognisable scene and measuring its capture delay.  PAL/NTSC detection and
 frame cadence must be logged per run.
 
-### Controller interface
+### Controller interface and hardware plan
 
-Use an RP2040, Arduino-class microcontroller, or equivalent as a USB-serial
-joystick bridge.  Its hardware must emulate **momentary switch closures** on
-the Atari joystick port: each requested direction/fire line is connected to
-the controller common/ground only while active.  Use opto-isolators or
-open-drain switching designed for this purpose; never drive a voltage into a
-console controller pin.  Build and test it first with a spare controller,
-continuity meter and logic analyser, then with a console while a human can
-unplug it immediately.
+### Experiment 1: *Adventure* joystick bridge
+
+Use one RP2040-class microcontroller as a USB-serial bridge for the first
+console experiment.  The bridge plugs into one controller port and exposes
+five **normally-open, isolated dry contacts**: up, down, left, right and fire.
+Each active contact closes its Atari controller line to controller ground,
+exactly as a joystick switch does.  It never drives a voltage into a console
+controller pin.  This is simpler and more repeatable than mechanically moving
+a joystick, while still testing the real console, cartridge, controller-port
+electrical interface and composite-video path.
+
+Use an optically isolated relay or PhotoMOS/dry-contact board with adequate
+on-resistance for a switch closure, and verify it with a continuity meter
+before connection.  Allow only legal action combinations: neutral; one of up/
+down; one of left/right; and optional fire.  The original joystick is retained
+unaltered for human baseline runs; do not connect it in parallel with the
+bridge.
 
 The firmware should accept a small, fail-safe command such as
 `SET <bitmask> <duration_ms>`.  It must default to neutral on boot, USB loss,
@@ -127,11 +147,33 @@ actions with timestamps.  Keep console power, reset and difficulty switches
 manual for the first version.  An operator selects the cartridge and starts a
 run; the bridge supplies only joystick input.
 
-### Original-controller actuation (implementation step)
+### Approximate bill of materials: Experiment 1
 
-For the fairest hardware evaluation, preserve the original console, two
-joysticks and paddle pair as the input devices.  The recommended first build
-is a **reversible actuator rig**, not a modification to the controllers:
+Prices are planning ranges in EUR for the *Adventure* console loop, excluding
+the console, cartridge, host computer and existing joystick.  The bridge is
+single-port because *Adventure* needs one joystick only.
+
+| Item | Qty. | Estimate | Notes |
+| --- | ---: | ---: | --- |
+| RP2040 Pico-class USB microcontroller | 1 | EUR 5--12 | USB command receiver, timing and watchdog. |
+| Five-channel isolated normally-open dry-contact board, or an 8-channel board with spares | 1 | EUR 10--30 | Use only five contacts; confirm closed resistance and voltage/current rating. |
+| DE-9 male plug, backshell, short cable and strain relief | 1 lot | EUR 8--20 | One plug for one Atari controller port. |
+| Small enclosure, terminal block, wiring and USB cable | 1 lot | EUR 15--35 | Keep every console-facing connection accessible for continuity tests. |
+| Low-latency composite-to-USB capture device and video adapters | 1 lot | EUR 25--80 | Measure actual capture latency; many inexpensive devices buffer frames. |
+| Continuity meter or multimeter | 1 | EUR 15--30 | Required to prove neutral/closed states before console connection. |
+| Optional logic analyser and USB current meter | 1 each | EUR 20--50 | Useful for timing and commissioning, but not required for the first play test. |
+
+Expected Experiment 1 total: **about EUR 80--210**, or **EUR 40--100** if a
+capture device and multimeter are already available.  The first construction
+task is deliberately small: validate one direction and fire on a spare cable,
+then populate the remaining three direction contacts.
+
+### Experiment 2: original-controller and paddle actuation
+
+After *Adventure* works through the bridge, build a **reversible actuator
+rig** around the original two joysticks and paddle pair.  This is the more
+faithful human-controller comparison and adds analogue paddle games, but it is
+not needed to establish the agent, video loop or controller protocol.
 
 - Mount a removable fixture around each original joystick.  Five small
   push-actuators press up, down, left, right and fire; limit switches or a
@@ -158,7 +200,7 @@ An electrical joystick bridge remains a useful low-cost development tool.  Do
 not connect its output in parallel with an actuated original controller during
 evaluation; choose one input path per port and document it in the run log.
 
-### Approximate bill of materials: original-controller actuator rig
+### Approximate bill of materials: Experiment 2
 
 Prices are planning ranges in EUR for one two-port rig, excluding the console,
 controllers, host computer and tools.  Verify dimensions, voltage and stock
@@ -166,7 +208,7 @@ before ordering; mechanical fit is the largest uncertainty.
 
 | Item | Qty. | Estimate | Notes |
 | --- | ---: | ---: | --- |
-| RP2040 Pico-class USB microcontroller | 1 | EUR 5--12 | Command receiver, timing and watchdog. |
+| RP2040 Pico-class USB microcontroller | 1 | EUR 0--12 | Reuse the Experiment 1 board if the bridge is not active simultaneously; otherwise add one. |
 | PCA9685 16-channel PWM driver board | 1 | EUR 5--12 | Provides stable control channels for actuators. |
 | Metal-gear micro servos or miniature linear push-actuators | 14 | EUR 4--10 each | Ten for two joystick controls; four for two paddle knobs/buttons.  Allow spares. |
 | 5 V, 10--15 A regulated power supply | 1 | EUR 20--35 | Size after measuring actuator stall current; do not power actuators from USB or the Atari port. |
@@ -174,12 +216,12 @@ before ordering; mechanical fit is the largest uncertainty.
 | Limit switches, cabling, connectors and strain relief | 1 lot | EUR 20--40 | Includes servo extensions and a USB cable. |
 | Laser-cut/3D-printed fixture, fasteners and slip-clutch couplers | 1 lot | EUR 30--80 | Must be designed around the actual controller shells. |
 | Breadboard/prototyping board, headers and test points | 1 lot | EUR 10--25 | Replace with a fused enclosure/PCB after proving the design. |
-| Low-latency composite-to-USB capture device and video adapters | 1 lot | EUR 25--80 | Measure actual latency; many inexpensive devices buffer frames. |
-| Optional logic analyser and USB current meter | 1 each | EUR 20--50 | Strongly recommended during commissioning. |
+| Optional spare capture device/video adapters | 1 lot | EUR 25--80 | Not needed if Experiment 1 capture hardware is retained. |
+| Logic analyser and USB current meter | 1 each | EUR 20--50 | Strongly recommended during commissioning. |
 
-Expected project total: **about EUR 190--390**, or **EUR 150--270** if a
-capture device and basic test equipment are already available.  Add 15--20%
-contingency for spare actuators and fixture iterations.
+Expected additional Experiment 2 cost: **about EUR 160--365** when reusing
+Experiment 1 capture/test hardware.  Add 15--20% contingency for spare
+actuators and fixture iterations.
 
 Before building the full rig, prototype one joystick direction and one paddle
 knob.  Characterise force, travel, repeatability and paddle end stops using
@@ -203,8 +245,8 @@ normal human-operated range.
 | 0. Reproducibility | ROM inventory, legal-use notes, experiment config and run log format | A fixed emulator episode can be replayed from its log. |
 | 1. Baseline | Emulator adapter and recurrent joystick policy | Learns a simple game and produces comparable metrics. |
 | 2. Efficient learner | World model, uncertainty exploration and prioritized replay | Beats the baseline at equal interaction frames on held-out seeds. |
-| 3. Console bridge | Capture pipeline, safe joystick firmware and latency measurement | Human smoke test and neutral-on-failure behaviour pass. |
-| 3a. Original-control rig | Reversible joystick/paddle actuator fixture, emergency stop and calibration log | Each control is repeatable, releases on failure, and does not alter the controller. |
+| 3. *Adventure* console bridge | Capture pipeline, five-contact joystick firmware and latency measurement | Human/bridge smoke tests and neutral-on-failure behaviour pass. |
+| 3a. Original-control rig | Second experiment: reversible joystick/paddle actuator fixture, emergency stop and calibration log | Each control is repeatable, releases on failure, and does not alter the controller. |
 | 4. Transfer | Hardware evaluation harness | Policy completes repeatable unattended runs on the chosen game. |
 
 ## Decisions to make before implementation
