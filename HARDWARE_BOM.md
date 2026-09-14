@@ -94,10 +94,11 @@ relay/ULN2803A modules.  Do not substitute a Nano 33 variant without checking
 its 3.3 V GPIO levels.  Do not power relay coils from the Atari port, and use
 only relay contacts on the console-facing side.
 
-No Raspberry Pi is part of this design.  The existing Linux box hosts UVC
-camera capture, policy inference, preview, and episode logging; it sends only
-validated serial action commands to the Nano.  The Linux box is existing host
-equipment and is therefore excluded from this controller-bridge BoM.
+No Raspberry Pi is part of this design.  For phase one, the seated
+Arthur-bipedal robot is the gameplay platform: its application hosts UVC
+camera capture, policy inference, preview, episode logging, and the validated
+serial command link to the Nano.  Arthur stays seated with a fixed camera pose;
+locomotion and arm control are not part of this relay-bridge baseline.
 
 ## Video path A: reuse a USB robot camera (preferred first option)
 
@@ -176,24 +177,24 @@ display, **EUR 87–231** with direct composite capture, or **EUR 117–331** if
 external RF demodulation is necessary.  Existing tools, cables, or a suitable
 5 V USB supply lower this cost.
 
-### Recommended configuration: Linux host, Arduino Nano bridge, and USB camera
+### Recommended phase-one configuration: seated Arthur, Nano bridge, and USB camera
 
 Use the hardware already available as follows:
 
 ```text
-USB camera -> Linux box (capture, policy, preview, episode log)
-Linux box -> USB serial -> Arduino Nano (command validation + watchdog)
-Arduino Nano GPIO -> ULN2803A -> five relay coils -> DE-9 dry contacts -> Atari
+USB camera -> seated Arthur application (capture, policy, preview, episode log)
+Arthur application -> USB serial -> Arduino Nano (command validation + watchdog)
+Arduino Nano GPIO -> relay modules -> DE-9 dry contacts -> Atari
 ```
 
-The Nano owns the safety-critical neutral-on-timeout action, even if the Linux
-camera process, policy runtime, or operating system stalls.  This configuration
+The Nano owns the safety-critical neutral-on-timeout action, even if Arthur's
+camera process, application, or operating system stalls.  This configuration
 does not use a Raspberry Pi.  It also avoids an initial composite-capture
-purchase; point the existing robot camera at the normal game display and use
-Video Path A's acceptance test.
+purchase; point Arthur's existing robot camera at the normal game display and
+use Video Path A's acceptance test.
 
-Use the Linux box's display (or a second monitor) for a live preview of the
-camera feed.  The Linux software should write synchronized video/frame timestamps, Nano
+Use Arthur's display (or a second monitor) for a live preview of the camera
+feed.  The Arthur application should write synchronized video/frame timestamps, Nano
 commands and applied relay masks to each episode log; a later playback view
 can overlay those actions on the gameplay.  The preview and log are for human
 observability only and must not add hidden console/emulator state to the

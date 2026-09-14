@@ -109,26 +109,29 @@ console, cartridge, original joysticks or paddles.  Experiment 1 uses the
 hardware already available, plus a small dry-contact bridge:
 
 ```text
-Atari video -> normal game display -> fixed USB robot camera -> Linux box
-Linux box -> USB serial -> Arduino Nano -> ULN2803A -> five relays -> Atari port 1
+Atari video -> normal game display -> Arthur's fixed camera -> Arthur application
+Arthur application -> USB serial -> Arduino Nano -> relay modules -> Atari port 1
 ```
 
 ### Confirmed Experiment 1 hardware decisions
 
-- **Existing Linux box:** host for the Python agent, USB camera capture, live
-  preview, episode recording, and USB-serial command link.  No Raspberry Pi
-  is used.
+- **Arthur-bipedal robot, seated in its chair:** the gameplay robot and host
+  platform for the application, camera capture, live preview, episode
+  recording, and USB-serial command link.  Keep Arthur seated and its camera
+  pose fixed for this baseline; locomotion, pan/tilt, and arm motion are not
+  part of the phase-one action space.
 - **USB robot camera on the two-axis Robotis head:** the agent sees the same
   physical display as a human.  Use the head to frame the screen during setup,
   then lock/hold its pan and tilt at recorded positions for all episodes; the
   agent does not control camera movement.
 - **Classic Arduino Nano:** independent real-time joystick bridge.  It
   validates commands and opens all contacts on boot, serial loss, malformed
-  data, or watchdog timeout.  The Linux host is never the only safety
+  data, or watchdog timeout.  The Arthur application is never the only safety
   mechanism.
-- **ULN2803A plus five normally-open relays:** relay contacts reproduce the
-  original joystick's five switch closures (up, down, left, right, fire) to
-  controller common.  They are the only electrical connection to the Atari.
+- **Three in-stock two-channel relay modules:** five of their six channels
+  reproduce the original joystick's five switch closures (up, down, left,
+  right, fire) to controller common.  They are the only electrical connection
+  to the Atari; no ULN2803A is needed.
 - **Original joystick:** remains unmodified and is plugged in separately for
   human baseline runs; never connect it in parallel with the bridge.
 
@@ -147,6 +150,21 @@ remain manual in Experiment 1.
 
 A draft fail-neutral Nano sketch for this protocol is in
 [`player/atari_joystick_bridge`](player/atari_joystick_bridge/).
+
+### Embodied-control progression
+
+Phase one is the reproducible gameplay baseline: the Arthur application sees
+the display and sends actions through the Nano relay bridge while Arthur stays
+seated.  This keeps all Atari-facing control as isolated dry contacts and
+makes policy, perception, and timing measurements comparable between runs.
+
+Phase two replaces the relay bridge with Arthur's arms operating an unmodified
+physical joystick.  Keep the same action vocabulary and episode log schema,
+but add arm pose/command, joystick pose, contact outcome, and recovery events.
+Do not parallel the arm-operated joystick with the relay bridge; remove or
+disconnect the bridge before arm trials.  Commission the arm setup separately
+with the console disconnected, then test one action at a time with an
+emergency stop and a human supervisor.
 
 ### Recorded hardware milestone: Nano bridge commissioning
 
