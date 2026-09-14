@@ -160,6 +160,10 @@ compared with the fixed-camera baseline.
 
 ## Video path B: direct composite USB capture
 
+Two four-switch Atari 2600 units are designated for the on-hand Vintage Gaming
+and More 2.0 composite-video modification.  The board wiring and four-switch
+installation record are in [`player/VIDEO_MOD.md`](player/VIDEO_MOD.md).
+
 | Item | Qty. | Target specification | Estimate | Why it is needed |
 | --- | ---: | --- | ---: | --- |
 | USB video capture device | 1 | UVC-compatible; **composite CVBS input**; PAL/NTSC support stated | EUR 25–80 | Converts console video into frames readable by the host. |
