@@ -17,7 +17,7 @@ controller actuators, and console modifications belong to Experiment 2.
 
 ```text
                        USB                 dry-contact closures
-host / agent  ---------------->  RP2040 + relay board  ----------------> Atari port 1
+Linux host -> USB serial -> Arduino Nano -> relay-driver + relay board -> Atari port 1
    ^                                                                  (up/down/left/right/fire)
    |
    | UVC frames (choose one video path)
@@ -69,9 +69,9 @@ can be sourced locally.
 
 | Item | Qty. | Target specification | Estimate | Why it is needed |
 | --- | ---: | --- | ---: | --- |
-| Controller board: RP2040 Pico-class **or classic Arduino Nano** | 1 | USB serial; at least five digital outputs; watchdog support | EUR 5–15 | Receives serial commands, enforces legal actions, operates watchdog. |
+| Controller board: **classic 5 V Arduino Nano (ATmega328P)** | 1 | USB serial; at least five digital outputs; watchdog support | EUR 5–15 | Enforces legal actions and operates the watchdog. |
 | 5 V miniature relay | 5 | SPST-NO or SPDT; dry contacts; coil current documented | EUR 2–5 each | One isolated switch closure for each joystick input. |
-| ULN2803A or equivalent relay-driver board | 1 | Eight low-side channels with flyback diodes | EUR 2–8 | Lets 3.3 V GPIO switch relay coils safely. |
+| ULN2803A or equivalent relay-driver board | 1 | Eight low-side channels with flyback diodes | EUR 2–8 | Lets Nano GPIO switch relay coils safely. |
 | 5 V, 1 A regulated USB supply | 1 | Certified supply plus cable | EUR 8–15 | Powers controller and relay coils; it does not power the Atari. |
 | DE-9 male plug and backshell | 1 | Solder-cup or screw-terminal type; clear pin labels | EUR 3–8 | Mates with one Atari controller port. |
 | Small terminal block or perfboard | 1 | Six low-voltage signal positions minimum | EUR 3–10 | Cleanly distributes the five contacts and common. |
@@ -82,32 +82,22 @@ can be sourced locally.
 
 Minimum controller-bridge subtotal: **EUR 57–139**.  A preassembled,
 opto-isolated relay board with five or more dry-contact channels may replace
-the five relays and driver, provided its input logic works at 3.3 V and its
+the five relays and driver, provided its input logic works at 5 V and its
 outputs are genuinely isolated, normally open contacts.
 
 ### Controller-board choice
 
-A classic 5 V Arduino Nano (ATmega328P) is sufficient and is a particularly
-direct choice for this build.  The agent does not run on the Nano: the host
-computer sends simple USB-serial commands, while the Nano sets five output
-pins and enforces the neutral-on-timeout watchdog.  Its 5 V logic also suits
-many common 5 V relay/ULN2803A modules.
+A classic 5 V Arduino Nano (ATmega328P) is the specified controller bridge for
+this build.  It sets the five output pins and independently opens all relays
+when its command timeout expires.  Its 5 V logic also suits many common 5 V
+relay/ULN2803A modules.  Do not substitute a Nano 33 variant without checking
+its 3.3 V GPIO levels.  Do not power relay coils from the Atari port, and use
+only relay contacts on the console-facing side.
 
-An RP2040 Pico offers more headroom and native USB flexibility, but neither is
-needed for the five-contact task.  If using an Arduino Nano, avoid mixing it
-up with a Nano 33 variant: Nano 33 boards use 3.3 V GPIO and need the same
-input-level checks as the Pico.  Regardless of board, do not power relay coils
-from the Atari port and use only relay contacts on the console-facing side.
-
-A Raspberry Pi 4 can also operate the five relay-driver inputs through its
-3.3 V GPIO and is a good small host for the Python camera/agent process.  For
-the first build, the preferred split is **Pi 4 as host + classic Nano as
-controller bridge**: the Pi reads the USB camera and sends serial commands;
-the Nano independently opens all relays when commands stop.  A Pi 4-only
-bridge is acceptable for bench work, but it needs boot-state pull-downs and a
-carefully tested hardware/software watchdog because Linux scheduling or a
-process crash must never leave a control asserted.  The Pi GPIO must connect
-to the relay driver only--never directly to the Atari port.
+No Raspberry Pi is part of this design.  The existing Linux box hosts UVC
+camera capture, policy inference, preview, and episode logging; it sends only
+validated serial action commands to the Nano.  The Linux box is existing host
+equipment and is therefore excluded from this controller-bridge BoM.
 
 ## Video path A: reuse a USB robot camera (preferred first option)
 
@@ -186,35 +176,36 @@ display, **EUR 87–231** with direct composite capture, or **EUR 117–331** if
 external RF demodulation is necessary.  Existing tools, cables, or a suitable
 5 V USB supply lower this cost.
 
-### Recommended configuration with existing Pi 4, Nano and USB camera
+### Recommended configuration: Linux host, Arduino Nano bridge, and USB camera
 
 Use the hardware already available as follows:
 
 ```text
-USB camera -> Raspberry Pi 4 (Python: crop, observation, policy)
-Raspberry Pi 4 USB serial -> classic Arduino Nano (command validation + watchdog)
+USB camera -> Linux box (capture, policy, preview, episode log)
+Linux box -> USB serial -> Arduino Nano (command validation + watchdog)
 Arduino Nano GPIO -> ULN2803A -> five relay coils -> DE-9 dry contacts -> Atari
 ```
 
-This leaves the safety-critical neutral-on-timeout action on the Nano, even if
-the Pi camera process, Python runtime, or operating system stalls.  It also
-avoids an initial composite-capture purchase; point the existing robot camera
-at the normal game display and use Video Path A's acceptance test.
+The Nano owns the safety-critical neutral-on-timeout action, even if the Linux
+camera process, policy runtime, or operating system stalls.  This configuration
+does not use a Raspberry Pi.  It also avoids an initial composite-capture
+purchase; point the existing robot camera at the normal game display and use
+Video Path A's acceptance test.
 
-Use the Pi display output (or a second monitor) for a live preview of the
-camera feed.  The host should write synchronized video/frame timestamps, Nano
+Use the Linux box's display (or a second monitor) for a live preview of the
+camera feed.  The Linux software should write synchronized video/frame timestamps, Nano
 commands and applied relay masks to each episode log; a later playback view
 can overlay those actions on the gameplay.  The preview and log are for human
 observability only and must not add hidden console/emulator state to the
 agent's input.
 
-With a Pi 4, Nano and camera already on hand, the remaining purchases are
+With the Nano and camera already on hand, the remaining purchases are
 normally five relays, a ULN2803A driver, 5 V relay supply, DE-9 plug,
 perfboard/terminal block, wire, enclosure and a continuity meter.  Budget
 **about EUR 42–134**, or less if a suitable 5 V supply and meter are already
-available.  Do not buy the capture device, RF demodulator, second controller
-bridge, paddle parts, or physical actuators until their later experiments are
-needed.
+available.  Do not buy a Raspberry Pi, capture device, RF demodulator, second
+controller bridge, paddle parts, or physical actuators until their later
+experiments are needed.
 
 ### Amazon.de examples to evaluate
 
@@ -225,9 +216,8 @@ requirement in the BoM table above.
 
 | Need | Amazon.de starting point | Check before ordering |
 | --- | --- | --- |
-| Controller board | [Raspberry Pi Pico RP2040](https://www.amazon.de/s?k=raspberry+pi+pico+rp2040) or [classic Arduino Nano ATmega328P](https://www.amazon.de/s?k=arduino+nano+atmega328p) | USB data connector; headers supplied or separately ordered; distinguish 5 V classic Nano from 3.3 V Nano 33 variants. |
-| Optional local host | [Raspberry Pi 4 Model B](https://www.amazon.de/s?k=raspberry+pi+4+model+b) | Useful for Python + USB-camera capture; retain Nano/Pico for independent relay timeout. |
-| Five closures (one spare) | [5 V 8-channel relay module with optocoupler](https://www.amazon.de/s?k=5v+8+channel+relay+module+optocoupler) | Normally-open relay contacts; a 3.3 V-compatible input or a separate ULN2803A driver; do not assume the word “optocoupler” makes a board safe for 3.3 V GPIO. |
+| Controller board | [Classic Arduino Nano ATmega328P](https://www.amazon.de/s?k=arduino+nano+atmega328p) | USB data connector; headers supplied or separately ordered; distinguish the 5 V classic Nano from 3.3 V Nano 33 variants. |
+| Five closures (one spare) | [5 V 8-channel relay module with optocoupler](https://www.amazon.de/s?k=5v+8+channel+relay+module+optocoupler) | Normally-open relay contacts; a 5 V-compatible input or a separate ULN2803A driver; do not assume the word “optocoupler” makes a board suitable for Nano GPIO. |
 | Discrete relay driver | [ULN2803A relay-driver module](https://www.amazon.de/s?k=ULN2803A+relay+driver+module) | Eight channels and flyback-diode/common connection documented. |
 | Atari-port connector | [DE-9 male solder connector with backshell](https://www.amazon.de/s?k=DE-9+male+solder+connector+backshell) | Male DE-9, solder-cup/screw terminal, and the physical pin numbering visible. |
 | Optional direct capture | [USB composite/CVBS video capture (PAL/NTSC)](https://www.amazon.de/s?k=usb+video+capture+composite+cvbs+pal+ntsc) | Yellow-RCA **composite input** (not HDMI-only); PAL/NTSC support; works on the intended OS; return option for latency testing. |
@@ -244,7 +234,7 @@ HDMI-only “capture card” for an unmodified composite/RF Atari output.
 
 Use five independent relay contacts.  Wire one side of every relay contact to
 DE-9 pin 8.  Wire the other side of each contact to exactly one signal pin:
-1, 2, 3, 4, or 6.  Nothing from the RP2040, relay-coil supply, USB ground, or
+1, 2, 3, 4, or 6.  Nothing from the Arduino Nano, relay-coil supply, USB ground, or
 ULN2803A output may be wired directly to a controller signal pin.
 
 ```text
@@ -258,10 +248,13 @@ DE-9 pin 8  --------+----[ relay: Up ]------ DE-9 pin 1
 The relay **contacts** are the only electrical connection between the bridge
 and console.  The relay **coils** are a separate circuit: 5 V to coil, coil to
 the ULN2803A output, with the driver's common/flyback connection made as
-specified by its datasheet.  Connect RP2040 GPIO pins to five ULN2803A inputs
-and share ground only between the RP2040 and the relay-driver/coil supply.
+specified by its datasheet.  Connect Arduino Nano GPIO pins to five ULN2803A
+inputs and share ground only between the Nano and the relay-driver/coil supply.
 
 ### Firmware safety rules
+
+The draft Nano implementation and its serial protocol are in
+[`player/atari_joystick_bridge`](player/atari_joystick_bridge/).
 
 - All five relays start and fail neutral (open).
 - A watchdog opens every relay if the host command stream stops.
@@ -278,7 +271,7 @@ the console first.
 
 ## Construction and acceptance sequence
 
-1. Assemble the RP2040, relay driver and **one** relay on a breadboard or
+1. Assemble the Arduino Nano, relay driver and **one** relay on a breadboard or
    perfboard.  Test the relay from a host command and confirm it opens after a
    forced watchdog timeout.
 2. With no Atari connected, test each relay contact using a multimeter:
@@ -326,4 +319,3 @@ actuator-rig outline and its separate estimate.
 
 - [Atari 2600 controller-port pinout](https://consolemods.org/wiki/Atari_2600%3AConnector_Pinouts)
 - [Atari 2600 domestic field service manual](https://www.atarimania.com/documents/Atari_2600_2600_A_VCS_Domestic_Field_Service_Manual.pdf)
-- [Raspberry Pi Pico availability and reference price](https://www.digikey.com/en/products/base-product/raspberry-pi/1690/RP2040/659562)

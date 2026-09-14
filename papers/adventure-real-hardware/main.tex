@@ -139,7 +139,7 @@ scores.
 Figure~\ref{fig:system} is a placeholder for the final system diagram.  An
 original Atari 2600 drives its normal display.  A fixed USB camera mounted on
 a two-axis Robotis head observes that display; pan and tilt are used only for
-setup and then fixed.  A Raspberry Pi~4 hosts camera capture, policy
+setup and then fixed.  An existing Linux box hosts camera capture, policy
 inference, preview, and logging.  It transmits bounded commands over USB
 serial to a classic Arduino Nano.  The Nano validates legal joystick masks
 and, through a ULN2803A driver and five normally-open relays, closes the
@@ -151,7 +151,7 @@ the controller port.
 \centering
 \fbox{\parbox{0.9\linewidth}{\centering
 \todo{System figure: Atari $\rightarrow$ display $\rightarrow$ fixed camera
-$\rightarrow$ Pi 4 $\rightarrow$ Nano $\rightarrow$ relay contacts
+$\rightarrow$ Linux box $\rightarrow$ Nano $\rightarrow$ relay contacts
 $\rightarrow$ Atari controller port.  Label the synchronized log.}}}
 \caption{Planned physical-console evaluation boundary.}
 \label{fig:system}
@@ -232,7 +232,7 @@ will avoid distributing copyrighted ROMs.
 
 \begin{itemize}[leftmargin=*]
   \item ROM hash and lawful acquisition procedure (without redistributing ROMs).
-  \item Console, display, camera, Pi, Nano, relay and firmware revisions.
+  \item Console, display, camera, Linux host, Nano, relay and firmware revisions.
   \item Camera crop, exposure, gain, white balance, frame rate, and Robotis
         head positions.
   \item Relay wiring diagram, continuity tests, watchdog tests, and command

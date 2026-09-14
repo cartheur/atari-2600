@@ -109,21 +109,23 @@ console, cartridge, original joysticks or paddles.  Experiment 1 uses the
 hardware already available, plus a small dry-contact bridge:
 
 ```text
-Atari video -> normal game display -> fixed USB robot camera -> Raspberry Pi 4
-Raspberry Pi 4 -> USB serial -> Arduino Nano -> ULN2803A -> five relays -> Atari port 1
+Atari video -> normal game display -> fixed USB robot camera -> Linux box
+Linux box -> USB serial -> Arduino Nano -> ULN2803A -> five relays -> Atari port 1
 ```
 
 ### Confirmed Experiment 1 hardware decisions
 
-- **Raspberry Pi 4:** host for the Python agent, USB camera capture, live
-  preview, episode recording, and USB-serial command link.
+- **Existing Linux box:** host for the Python agent, USB camera capture, live
+  preview, episode recording, and USB-serial command link.  No Raspberry Pi
+  is used.
 - **USB robot camera on the two-axis Robotis head:** the agent sees the same
   physical display as a human.  Use the head to frame the screen during setup,
   then lock/hold its pan and tilt at recorded positions for all episodes; the
   agent does not control camera movement.
 - **Classic Arduino Nano:** independent real-time joystick bridge.  It
   validates commands and opens all contacts on boot, serial loss, malformed
-  data, or watchdog timeout.  The Pi is never the only safety mechanism.
+  data, or watchdog timeout.  The Linux host is never the only safety
+  mechanism.
 - **ULN2803A plus five normally-open relays:** relay contacts reproduce the
   original joystick's five switch closures (up, down, left, right, fire) to
   controller common.  They are the only electrical connection to the Atari.
@@ -143,10 +145,24 @@ hold interval unless renewed, and log the applied relay mask with a monotonic
 timestamp.  Console power, reset, difficulty and game-variation selection
 remain manual in Experiment 1.
 
+A draft fail-neutral Nano sketch for this protocol is in
+[`player/atari_joystick_bridge`](player/atari_joystick_bridge/).
+
+### Recorded hardware milestone: Nano bridge commissioning
+
+The Nano bridge sketch has been drafted and compile-checked for a classic
+ATmega328P Nano using the `arduino:avr:nano:cpu=atmega328old` target
+(3,930 bytes flash; 262 bytes RAM).  The next future hardware milestone is to
+flash that sketch and commission the relay bridge with no Atari connected:
+verify with a continuity meter that boot, `STOP`, malformed serial input, and
+the 250 ms command timeout all leave every relay contact open.  Only after
+these checks pass should the DE-9 bridge be connected to the powered-off
+console.
+
 The detailed purchasing list, wiring boundary, Amazon.de starting searches,
 commissioning tests and camera acceptance procedure are maintained in
 [HARDWARE_BOM.md](HARDWARE_BOM.md).  The expected new-hardware spend is about
-EUR 42--134 because the Pi, Nano and camera are already available.
+EUR 42--134 because the Linux box, Nano and camera are already available.
 
 ### Experiment 2: original-controller and paddle actuation
 
@@ -188,7 +204,7 @@ before ordering; mechanical fit is the largest uncertainty.
 
 | Item | Qty. | Estimate | Notes |
 | --- | ---: | ---: | --- |
-| Existing Pi 4/Nano control hardware | 1 | EUR 0 | Reuse the established host/bridge pair; add a PWM board for actuator control. |
+| Existing Linux box/Nano control hardware | 1 | EUR 0 | Reuse the established host/bridge pair; add a PWM board for actuator control. |
 | PCA9685 16-channel PWM driver board | 1 | EUR 5--12 | Provides stable control channels for actuators. |
 | Metal-gear micro servos or miniature linear push-actuators | 14 | EUR 4--10 each | Ten for two joystick controls; four for two paddle knobs/buttons.  Allow spares. |
 | 5 V, 10--15 A regulated power supply | 1 | EUR 20--35 | Size after measuring actuator stall current; do not power actuators from USB or the Atari port. |
@@ -226,7 +242,7 @@ normal human-operated range.
 | 0. Reproducibility | ROM inventory, legal-use notes, experiment config and run log format | A fixed emulator episode can be replayed from its log. |
 | 1. Baseline | Emulator adapter and recurrent joystick policy | Learns a simple game and produces comparable metrics. |
 | 2. Efficient learner | World model, uncertainty exploration and prioritized replay | Beats the baseline at equal interaction frames on held-out seeds. |
-| 3. *Adventure* console bridge | Pi camera pipeline, Nano five-contact joystick firmware and latency measurement | Camera/bridge smoke tests and neutral-on-failure behaviour pass. |
+| 3. *Adventure* console bridge | Linux camera pipeline, Nano five-contact joystick firmware and latency measurement | Camera/bridge smoke tests and neutral-on-failure behaviour pass. |
 | 3a. Original-control rig | Second experiment: reversible joystick/paddle actuator fixture, emergency stop and calibration log | Each control is repeatable, releases on failure, and does not alter the controller. |
 | 4. Transfer | Hardware evaluation harness | Policy completes repeatable unattended runs on the chosen game. |
 
