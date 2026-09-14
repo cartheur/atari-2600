@@ -35,6 +35,11 @@ const uint8_t ACTION_FIRE = 1 << 4;
 const uint8_t ACTION_MASK = ACTION_UP | ACTION_DOWN | ACTION_LEFT |
                             ACTION_RIGHT | ACTION_FIRE;
 
+// SunFounder TS0010D relay modules use a low-level trigger: LOW closes the
+// module's NO-to-COM contact, while HIGH leaves it open.
+const uint8_t RELAY_ACTIVE_LEVEL = LOW;
+const uint8_t RELAY_INACTIVE_LEVEL = HIGH;
+
 const unsigned long MAX_HOLD_MS = 250;
 const size_t INPUT_CAPACITY = 48;
 
@@ -45,14 +50,11 @@ unsigned long releaseAt = 0;
 bool actionActive = false;
 
 void setRelays(uint8_t mask) {
-  // HIGH drives a ULN2803A input, which energizes the corresponding coil.
-  // If your prebuilt relay board is active-low, invert these five writes here
-  // only after proving boot and timeout states with a continuity meter.
-  digitalWrite(PIN_UP, (mask & ACTION_UP) ? HIGH : LOW);
-  digitalWrite(PIN_DOWN, (mask & ACTION_DOWN) ? HIGH : LOW);
-  digitalWrite(PIN_LEFT, (mask & ACTION_LEFT) ? HIGH : LOW);
-  digitalWrite(PIN_RIGHT, (mask & ACTION_RIGHT) ? HIGH : LOW);
-  digitalWrite(PIN_FIRE, (mask & ACTION_FIRE) ? HIGH : LOW);
+  digitalWrite(PIN_UP, (mask & ACTION_UP) ? RELAY_ACTIVE_LEVEL : RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_DOWN, (mask & ACTION_DOWN) ? RELAY_ACTIVE_LEVEL : RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_LEFT, (mask & ACTION_LEFT) ? RELAY_ACTIVE_LEVEL : RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_RIGHT, (mask & ACTION_RIGHT) ? RELAY_ACTIVE_LEVEL : RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_FIRE, (mask & ACTION_FIRE) ? RELAY_ACTIVE_LEVEL : RELAY_INACTIVE_LEVEL);
   appliedMask = mask;
 }
 
@@ -172,6 +174,13 @@ void readSerial() {
 }
 
 void setup() {
+  // Latch the inactive HIGH level before enabling each output.  This avoids a
+  // low-going startup pulse on the TS0010D's active-low inputs.
+  digitalWrite(PIN_UP, RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_DOWN, RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_LEFT, RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_RIGHT, RELAY_INACTIVE_LEVEL);
+  digitalWrite(PIN_FIRE, RELAY_INACTIVE_LEVEL);
   pinMode(PIN_UP, OUTPUT);
   pinMode(PIN_DOWN, OUTPUT);
   pinMode(PIN_LEFT, OUTPUT);

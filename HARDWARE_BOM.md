@@ -72,8 +72,8 @@ can be sourced locally.
 | Controller board: **classic 5 V Arduino Nano (ATmega328P)** | 1 | USB serial; at least five digital outputs; watchdog support | EUR 5–15 | Enforces legal actions and operates the watchdog. |
 | 5 V miniature relay | 5 | SPST-NO or SPDT; dry contacts; coil current documented | EUR 2–5 each | One isolated switch closure for each joystick input. |
 | ULN2803A or equivalent relay-driver board | 1 | Eight low-side channels with flyback diodes | EUR 2–8 | Lets Nano GPIO switch relay coils safely. |
-| 5 V, 1 A regulated USB supply | 1 | Certified supply plus cable | EUR 8–15 | Powers controller and relay coils; it does not power the Atari. |
-| DE-9 male plug and backshell | 1 | Solder-cup or screw-terminal type; clear pin labels | EUR 3–8 | Mates with one Atari controller port. |
+| 5 V USB power bank | 1 | At least 1 A continuous; no low-current auto-shutoff; USB lead/breakout | EUR 0 | Powers relay coils; it does not power the Atari or Nano. |
+| DB-9 female plug and backshell | 1 | Solder-cup or screw-terminal type; clear pin labels | EUR 3–8 | Mates with the Atari console's DB-9 male controller port. |
 | Small terminal block or perfboard | 1 | Six low-voltage signal positions minimum | EUR 3–10 | Cleanly distributes the five contacts and common. |
 | Hook-up wire and heat-shrink | 1 lot | 24–28 AWG stranded, labelled | EUR 5–15 | Console-port wiring and strain relief. |
 | Non-conductive project enclosure | 1 | Space for board, relays, cable exit and labels | EUR 8–20 | Prevents accidental shorts and protects the bridge. |
@@ -201,7 +201,7 @@ observability only and must not add hidden console/emulator state to the
 agent's input.
 
 With the Nano and camera already on hand, the remaining purchases are
-normally five relays, a ULN2803A driver, 5 V relay supply, DE-9 plug,
+normally five relays, a ULN2803A driver, 5 V relay supply, DB-9 female plug,
 perfboard/terminal block, wire, enclosure and a continuity meter.  Budget
 **about EUR 42–134**, or less if a suitable 5 V supply and meter are already
 available.  Do not buy a Raspberry Pi, capture device, RF demodulator, second
@@ -220,7 +220,7 @@ requirement in the BoM table above.
 | Controller board | [Classic Arduino Nano ATmega328P](https://www.amazon.de/s?k=arduino+nano+atmega328p) | USB data connector; headers supplied or separately ordered; distinguish the 5 V classic Nano from 3.3 V Nano 33 variants. |
 | Five closures (one spare) | [5 V 8-channel relay module with optocoupler](https://www.amazon.de/s?k=5v+8+channel+relay+module+optocoupler) | Normally-open relay contacts; a 5 V-compatible input or a separate ULN2803A driver; do not assume the word “optocoupler” makes a board suitable for Nano GPIO. |
 | Discrete relay driver | [ULN2803A relay-driver module](https://www.amazon.de/s?k=ULN2803A+relay+driver+module) | Eight channels and flyback-diode/common connection documented. |
-| Atari-port connector | [DE-9 male solder connector with backshell](https://www.amazon.de/s?k=DE-9+male+solder+connector+backshell) | Male DE-9, solder-cup/screw terminal, and the physical pin numbering visible. |
+| Atari-port connector | [DB-9 female solder connector with backshell](https://www.amazon.de/s?k=DB-9+female+solder+connector+backshell) | Female DB-9, solder-cup/screw terminal, and the physical pin numbering visible. |
 | Optional direct capture | [USB composite/CVBS video capture (PAL/NTSC)](https://www.amazon.de/s?k=usb+video+capture+composite+cvbs+pal+ntsc) | Yellow-RCA **composite input** (not HDMI-only); PAL/NTSC support; works on the intended OS; return option for latency testing. |
 | RCA video lead | [75-ohm RCA composite-video cable](https://www.amazon.de/s?k=75+ohm+RCA+composite+video+cable) | Correct connector genders and sufficient length. |
 | Commissioning meter | [Digital multimeter with continuity buzzer](https://www.amazon.de/s?k=digital+multimeter+continuity+buzzer) | Audible continuity mode and insulated probes. |

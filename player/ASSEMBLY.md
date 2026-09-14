@@ -9,7 +9,7 @@ USB camera -> Linux box -> USB data cable -> Arduino Nano -> relay driver -> rel
                                                                     |
                                                            dry contacts only
                                                                     |
-                                                         DE-9 male -> Atari port 1
+                                                       DB-9 female -> Atari port 1
 ```
 
 The Nano is the fail-safe controller; it opens all relay contacts when it
@@ -17,26 +17,14 @@ boots, receives bad input, receives `STOP`, or lets an action command expire.
 The Linux box runs camera capture and the agent, but must not be the only
 safety mechanism.
 
-## Parts
+Electrical requirements and terminal names for the two-channel relay modules
+are from the [TS0010D datasheet](../datasheets/TS0010D.pdf): 5 V operation,
+`VCC`/`GND`/`IN1`/`IN2` input terminals, `JD-VCC` coil supply, active-low
+triggering, and 15--20 mA input current per channel.
 
-- Classic 5 V Arduino Nano (ATmega328P), with USB data cable.
-- ULN2803A driver board, or a ULN2803A IC on perfboard with its flyback-diode
-  common connection accessible.
-- Five 5 V SPST-NO or SPDT relays.  A compatible 5 V relay module may replace
-  individual relays and the driver.
-- **Available substitution:** three of the two-channel 5 V relay modules on
-  hand ([AliExpress listing](https://nl.aliexpress.com/item/32824662430.html))
-  provide six channels.  Use five channels in the order below and leave the
-  sixth unconnected.  These replace both the ULN2803A and the individual
-  relays.
-- Regulated 5 V supply sized for all relay coils (start with 1 A only after
-  checking the coils' documented current), plus a suitable cable/terminal.
-- DE-9 male solder-cup or screw-terminal connector and backshell.
-- Perfboard/terminal blocks, 24--28 AWG stranded wire, heat-shrink, enclosure,
-  labels, and a continuity meter.
-
-Do **not** use Arduino GPIO, USB power, ULN2803A outputs, or their grounds as
-Atari controller signals.  Only relay contacts connect to the DE-9.
+Do **not** use Arduino GPIO, USB power, relay-module logic wiring, or their
+grounds as Atari controller signals.  Only the SRD05 relay contacts connect to
+the DB-9 female connector.
 
 ## Wiring
 
@@ -49,71 +37,71 @@ Atari controller signals.  Only relay contacts connect to the DE-9.
 3. The sketch uses 115200 baud, 8 data bits, no parity, one stop bit.  It
    accepts newline-terminated commands such as `SET 17 100`.
 
-The Linux USB connection powers Nano logic in the normal configuration.  Do
-not use it to power relay coils.
+The Linux/Arthur USB connection powers Nano logic in the normal configuration.
+The separate 5 V USB power bank powers relay coils through `JD-VCC` (per the
+[TS0010D datasheet](../datasheets/TS0010D.pdf)); do not use the Nano USB
+connection for relay coils and do not join the two 5 V rails.
 
-### 2. Nano to relay driver and relay-coil supply
+### 2. Nano to the SRD05 relay-module inputs
 
 Use the following channel order consistently in the wiring, labels, and Linux
 software:
 
-| Action | Nano pin | ULN2803A input | ULN2803A output | Relay coil |
+| Action | Nano pin | Relay module | Module input | SRD05 relay channel |
 | --- | --- | --- | --- | --- |
-| Up | D2 | IN1 | OUT1 | Up coil low side |
-| Down | D3 | IN2 | OUT2 | Down coil low side |
-| Left | D4 | IN3 | OUT3 | Left coil low side |
-| Right | D5 | IN4 | OUT4 | Right coil low side |
-| Fire | D6 | IN5 | OUT5 | Fire coil low side |
+| Up | D2 | A | IN1 | A / CH1 |
+| Down | D3 | A | IN2 | A / CH2 |
+| Left | D4 | B | IN1 | B / CH1 |
+| Right | D5 | B | IN2 | B / CH2 |
+| Fire | D6 | C | IN1 | C / CH1 |
 
 Make these low-voltage control connections:
 
 ```text
-Nano D2..D6  -> ULN2803A IN1..IN5
-Nano GND     -> ULN2803A logic/power ground -> relay-supply negative
-Relay + side -> regulated +5 V relay supply
-Relay - side -> corresponding ULN2803A OUT1..OUT5
-ULN2803A COM -> regulated +5 V relay supply (enables internal flyback diodes)
+Nano D2       -> module A IN1 (Up)
+Nano D3       -> module A IN2 (Down)
+Nano D4       -> module B IN1 (Left)
+Nano D5       -> module B IN2 (Right)
+Nano D6       -> module C IN1 (Fire)
+Remove VCC--JD-VCC jumper -> on each relay module
+Nano 5V       -> each relay module VCC (input/optocoupler supply)
+Nano GND      -> each relay module GND (input reference)
+5 V power-bank + -> each relay module JD-VCC (relay-coil supply)
+5 V power-bank - -> each relay module GND
 ```
 
-For an individual bare ULN2803A, follow its package pinout/datasheet: the
-input/output channel order and COM pin must be verified before soldering.  For
-a prebuilt board, follow the board's labelled IN/OUT/COM/GND terminals.  Do
-not connect the Nano's 5 V pin to a separate relay supply unless its power
-path has been explicitly designed to prevent USB back-feeding.
+This is the TS0010D split-supply configuration: `VCC` powers the input side and
+`JD-VCC` powers the relay coils.  Do not connect the Nano's 5 V pin to the
+power bank; the removed jumper prevents USB back-feeding between the two 5 V
+supplies.  The [TS0010D datasheet](../datasheets/TS0010D.pdf) specifies
+15--20 mA of driver current per input.  Five active channels draw 75--100 mA
+from Nano GPIO in total, so keep the Nano wiring short and verify the module
+input current on the actual boards before sustained five-button operation.
 
-#### Using the three in-stock two-channel relay modules
+The [TS0010D datasheet](../datasheets/TS0010D.pdf) specifies **active-low**
+triggering: a Nano `LOW` closes the relay's NO-to-COM contact and a `HIGH`
+opens it.  The supplied sketch is configured accordingly.
+Before connecting the Atari, still repeat the boot, `STOP`, timeout, and reset
+continuity tests to prove that all contacts are open in every neutral/fault
+state.
 
-Connect Nano D2--D6 to five module inputs in the same Up, Down, Left, Right,
-Fire order.  Power the modules' relay-coil side from the regulated 5 V supply
-and make the required Nano/module control-ground connection according to the
-module labelling.  Do not add a ULN2803A: the modules already contain their
-relay drivers and coil flyback protection.
-
-Many such modules are **active-low**: a Nano `LOW` energizes a relay and a
-`HIGH` releases it.  Before connecting the Atari, test one channel with the
-commissioning continuity check.  If it is active-low, invert the five
-`digitalWrite` values in `setRelays()` in
-`atari_joystick_bridge.ino`, then repeat the boot, `STOP`, timeout, and reset
-tests to prove that all contacts are open in every neutral/fault state.
-
-### 3. Relay contacts to the Atari DE-9 plug
+### 3. SRD05 relay contacts to the Atari DB-9 console inputs
 
 Use the **common (COM)** and **normally open (NO)** contact of each relay;
 leave normally closed (NC) unconnected.  Join the COM side of all five relay
 contacts, then wire that shared contact common to DE-9 pin 8.
 
-| Relay | NO contact goes to DE-9 pin | Atari function |
-| --- | ---: | --- |
-| Up | 1 | Up |
-| Down | 2 | Down |
-| Left | 3 | Left |
-| Right | 4 | Right |
-| Fire | 6 | Fire |
-| Shared relay-contact COM | 8 | Controller common |
+| Action | SRD05 relay channel | COM terminal | NO terminal connects to Atari DB-9 male console input |
+| --- | --- | --- | --- |
+| Up | A / CH1 | Shared relay-contact COM -> DB-9 pin 8 | DB-9 pin 1 (Up) |
+| Down | A / CH2 | Shared relay-contact COM -> DB-9 pin 8 | DB-9 pin 2 (Down) |
+| Left | B / CH1 | Shared relay-contact COM -> DB-9 pin 8 | DB-9 pin 3 (Left) |
+| Right | B / CH2 | Shared relay-contact COM -> DB-9 pin 8 | DB-9 pin 4 (Right) |
+| Fire | C / CH1 | Shared relay-contact COM -> DB-9 pin 8 | DB-9 pin 6 (Fire) |
 
-Leave DE-9 pins 5 and 9 (paddle inputs) and pin 7 (+5 V) unconnected.  Verify
-the physical DE-9 plug's pin numbering before soldering; do not infer it from
-an RS-232 cable or connector gender.
+Leave DB-9 pins 5 and 9 (paddle inputs) and pin 7 (+5 V) unconnected.  Verify
+the physical pin numbering when viewing the female connector's solder side;
+do not infer it from an RS-232 cable or connector gender.
 
 ## Firmware and Linux smoke test
 
