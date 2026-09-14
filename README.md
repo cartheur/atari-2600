@@ -20,3 +20,7 @@ real Atari 2600's video and joystick port.
 
 The purchase list, wiring boundary, and commissioning sequence for the first
 *Adventure* hardware experiment are in the [dedicated hardware BoM](HARDWARE_BOM.md).
+
+In order to address these claims, we will need to construct our own cartridges expressing our own ROMs.
+
+![cartridge](/images/cartridge-board.jpg)
