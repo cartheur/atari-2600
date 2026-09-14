@@ -1,8 +1,6 @@
-# Arduino Nano Atari joystick relay bridge: assembly summary
+# Aeon-gameplay Atari joystick bridge: Assembly summary
 
-This bridge lets the Linux host issue joystick actions to an original Atari
-2600 through five normally-open relay contacts.  It does not modify the
-console or cartridge.
+This bridge lets _aeon_ issue joystick actions to the Linux host to a live and original Atari 2600 through five normally-open relay contacts.  It does not modify the console or cartridge; only the video is altered using a module so that a HDMI monitor or large-screen device can be viewed by the robot's camera.
 
 ```text
 USB camera -> Linux box -> USB data cable -> Arduino Nano -> relay driver -> relays
