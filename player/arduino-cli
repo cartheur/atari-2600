@@ -1,0 +1,4 @@
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+
+echo 'export PATH="$PATH:/home/cartheur/programs/bin"' >> ~/.bashrc
+source ~/.bashrc
