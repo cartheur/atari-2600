@@ -7,7 +7,7 @@ USB camera -> Linux box -> USB data cable -> Arduino Nano -> relay driver -> rel
                                                                     |
                                                            dry contacts only
                                                                     |
-                                                       DB-9 female -> Atari port 1
+                                                       DB-9 female -> Atari DE-9 port 1
 ```
 
 The Nano is the fail-safe controller; it opens all relay contacts when it
