@@ -255,6 +255,8 @@ inputs and share ground only between the Nano and the relay-driver/coil supply.
 
 The draft Nano implementation and its serial protocol are in
 [`player/atari_joystick_bridge`](player/atari_joystick_bridge/).
+Its bench assembly and commissioning summary is in
+[`player/atari_joystick_bridge/ASSEMBLY.md`](player/atari_joystick_bridge/ASSEMBLY.md).
 
 - All five relays start and fail neutral (open).
 - A watchdog opens every relay if the host command stream stops.

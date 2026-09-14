@@ -22,3 +22,6 @@ grounds to the Atari controller signals.
 
 Commission with a continuity meter and no Atari connected: verify that boot,
 `STOP`, a malformed command, and timeout all leave every contact open.
+
+For the complete parts list, connection map, Linux serial smoke test, and
+commissioning sequence, see [ASSEMBLY.md](ASSEMBLY.md).
