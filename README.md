@@ -10,16 +10,19 @@ This console is the most direct and simplistic way to not just have an agent (ae
 
 The work herein will work to explore this aspect.
 
-### Agent 57
+_Implementation_
 
-A [benchmark](https://deepmind.google/blog/agent57-outperforming-the-human-atari-benchmark/)
-
-See the [proposal for an efficient Atari-playing agent](AGENT_PLAY_PROPOSAL.md),
-including an emulator-first training plan and a safe path to play through a
-real Atari 2600's video and joystick port.
+See the [proposal for an efficient Atari-playing agent](AGENT_PLAY_PROPOSAL.md), including an emulator-first training plan and a safe path to play through a
+real Atari 2600's video and joystick port. We _will not emulate_ the solution.
 
 The purchase list, wiring boundary, and commissioning sequence for the first
 *Adventure* hardware experiment are in the [dedicated hardware BoM](HARDWARE_BOM.md).
+
+Additional information on the ecosystem can be found [here](https://www.8bitclassics.com/product/atari-2600-2k4k-pc-board/),
+
+### Agent 57
+
+A [benchmark](https://deepmind.google/blog/agent57-outperforming-the-human-atari-benchmark/)
 
 In order to address these claims, we will need to construct our own cartridges expressing our own ROMs.
 
