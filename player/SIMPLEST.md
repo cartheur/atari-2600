@@ -5,6 +5,18 @@ You can make the Arduino emulate an Atari 2600 joystick by using open-collector/
 The Atari 2600 joystick signals are active-low: a direction or FIRE action is produced by shorting its signal pin to pin 8, ground. The standard pins are UP 1, DOWN 2, LEFT 3, RIGHT 4, FIRE 6, and GND 8. Pins 5, 7, and 9 should normally be left unconnected.
 
 ```
+Arduino pin ──100 Ω── Gate
+                       |
+                     100 kΩ
+                       |
+                      GND
+
+2N7000 Source ──────── Arduino GND
+2N7000 Drain ───────── Atari joystick signal
+```
+Inside the composite layout:
+
+```
                          Atari 2600 DE-9
                     ┌─────────────────────┐
 Arduino D2 ─100 Ω───┤ Gate Q1             │
