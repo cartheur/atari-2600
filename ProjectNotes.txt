@@ -3,4 +3,5 @@ Atari 2600 autonomous player - Where everyone who has interest can play a game
 
 18.09.2026
     1509: Received a VCS after a 22-and-some year pause. Have the unit and one joystick apart to contemplate the circuit how the program can control its play.
+    1711: The first version of the joystick circuit is done and working with LEDs indicating when one of the following seletions is chosen (from left to right): Fire, Up, Down, Left, Right.
     
