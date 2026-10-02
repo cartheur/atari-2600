@@ -6,4 +6,7 @@ Atari 2600 autonomous player - Where everyone who has interest can play a game
     1711: The first version of the joystick circuit is done and working with LEDs indicating when one of the following seletions is chosen (from left to right): Fire, Up, Down, Left, Right.
 21.09.2026
     1031: Such an innovation is also suitable for the Intellivision, except will need support for the keypad.
+02.10.2026
+    1540: Have a complete inventory of immediate parts and an ancillary one expanding.
+    1542: We cannot rely on the arduino nano, rather, need an organic design around the AT328P.
     
